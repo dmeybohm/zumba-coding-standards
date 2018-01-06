@@ -78,4 +78,5 @@
 		</properties>
 	</rule>
 	<rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
+	<rule ref="Zumba.PHP.VariableAnalysis"/>
 </ruleset>
