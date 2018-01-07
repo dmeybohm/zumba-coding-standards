@@ -41,6 +41,5 @@ function h() {
 FOUND 0 ERROR(S) AND 3 WARNING(S) AFFECTING 1 LINE(S)
 --------------------------------------------------------------------------------
  10 | WARNING | Unused variable $key.
- 10 | WARNING | Unused variable $value.
  33 | WARNING | Unused variable $key.
 +--------------------------------------------------------------------------------
