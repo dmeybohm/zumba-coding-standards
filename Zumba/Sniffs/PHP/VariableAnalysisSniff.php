@@ -2,7 +2,7 @@
 
 call_user_func(function() {
 	$path = '/ingatlancom/variable-analysis/Sniffs/CodeAnalysis/VariableAnalysisSniff.php';
-	// This file is just a wrapper so we can πut this in our ruleset.xml:
+	// This file is just a wrapper so we can put this in our ruleset.xml:
 	if (@include_once __DIR__ . '/../../../../..' . $path) {
 		return;
 	}
