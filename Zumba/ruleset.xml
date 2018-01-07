@@ -78,5 +78,19 @@
 		</properties>
 	</rule>
 	<rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
-	<rule ref="Zumba.PHP.VariableAnalysis"/>
+	<rule ref="Zumba.PHP.VariableAnalysis">
+		<properties>
+			<!-- Unused exception parameters are a very common pattern -->
+			<property name="allowUnusedCaughtExceptions" value="1"/>
+
+			<!-- Traits report an error if you use $this, so disable checking for $this: -->
+			<property name="validUndefinedVariableNames" value="
+			this
+			"/>
+
+			<!-- Checking unused function params is too much trouble considering that
+				methods can inherit parameters they should not be required to use -->
+			<property name="allowUnusedFunctionParameters" value="1" />
+		</properties>
+	</rule>
 </ruleset>
