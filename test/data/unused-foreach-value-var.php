@@ -38,7 +38,7 @@ function h() {
 --EXPECT--
 
 --------------------------------------------------------------------------------
-FOUND 0 ERROR(S) AND 3 WARNING(S) AFFECTING 1 LINE(S)
+FOUND 0 ERROR(S) AND 2 WARNING(S) AFFECTING 1 LINE(S)
 --------------------------------------------------------------------------------
  10 | WARNING | Unused variable $key.
  33 | WARNING | Unused variable $key.
