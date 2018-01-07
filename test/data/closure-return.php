@@ -6,7 +6,7 @@
  * @return void
  */
 function foobar() {
-	$hello = function() {
+	function() {
 		return 'hello';
 	};
 	return "string";
