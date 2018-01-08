@@ -80,6 +80,9 @@
 	<rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
 	<rule ref="Zumba.PHP.VariableAnalysis">
 		<properties>
+			<!-- Force display of warnings, even if -n is passed -->
+			<property name="forceDisplayOfWarnings" value="1" />
+
 			<!-- Unused exception parameters are a very common pattern -->
 			<property name="allowUnusedCaughtExceptions" value="1"/>
 

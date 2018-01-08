@@ -12,34 +12,61 @@ call_user_func(function() {
 
 class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis_VariableAnalysisSniff {
 
-    /**
-     * @param PHP_CodeSniffer_File $phpcsFile
-     * @param int $stackPtr
-     * @param string $varName
-     * @param int $currScope
-     */
-    protected function checkForForeachLoopVar(
-        PHP_CodeSniffer_File $phpcsFile,
-        $stackPtr,
-        $varName,
-        $currScope
-    )
-    {
-        $found = parent::checkForForeachLoopVar($phpcsFile, $stackPtr, $varName, $currScope);
-        if ($found) {
-            //
-            // If we found a variable, and the foreach includes a key and value, mark the value as used:
-            //
-            if (($openPtr = $this->findContainingBrackets($phpcsFile, $stackPtr)) === false) {
-                return $found;
-            }
-            $token = $phpcsFile->findPrevious(T_DOUBLE_ARROW, $stackPtr - 1, $openPtr);
-            if ($token !== false) {
-                // found a double arrow: mark the value as used:
-                $this->markVariableRead($varName, $stackPtr, $currScope);
-            }
-        }
-        return $found;
-    }
+	/**
+	 * Whether to force display of warnings.
+	 *
+	 * @var bool
+	 */
+	public $forceDisplayOfWarnings = false;
+
+	/**
+	 * @param PHP_CodeSniffer_File $phpcsFile
+	 * @param int $stackPtr
+	 * @param string $varName
+	 * @param int $currScope
+	 */
+	protected function checkForForeachLoopVar(
+		PHP_CodeSniffer_File $phpcsFile,
+		$stackPtr,
+		$varName,
+		$currScope
+	)
+	{
+		$found = parent::checkForForeachLoopVar($phpcsFile, $stackPtr, $varName, $currScope);
+		if ($found) {
+			//
+			// If we found a variable, and the foreach includes a key and value, mark the value as used:
+			//
+			if (($openPtr = $this->findContainingBrackets($phpcsFile, $stackPtr)) === false) {
+				return $found;
+			}
+			$token = $phpcsFile->findPrevious(T_DOUBLE_ARROW, $stackPtr - 1, $openPtr);
+			if ($token !== false) {
+				// found a double arrow: mark the value as used:
+				$this->markVariableRead($varName, $stackPtr, $currScope);
+			}
+		}
+		return $found;
+	}
+
+	/**
+	 * Processes this test, when one of its tokens is encountered.
+	 *
+	 * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
+	 * @param int                  $stackPtr  The position of the current token
+	 *                                        in the stack passed in $tokens.
+	 *
+	 * @return void
+	 */
+	public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr) {
+		if (!$this->forceDisplayOfWarnings) {
+			parent::process($phpcsFile, $stackPtr);
+			return;
+		}
+		$saveWarningSeverity = $phpcsFile->phpcs->cli->warningSeverity;
+		$phpcsFile->phpcs->cli->warningSeverity = 1;
+		parent::process($phpcsFile, $stackPtr);
+		$phpcsFile->phpcs->cli->warningSeverity = $saveWarningSeverity;
+	}
 
 }
