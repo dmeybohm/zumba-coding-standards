@@ -28,7 +28,7 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
         $found = parent::checkForForeachLoopVar($phpcsFile, $stackPtr, $varName, $currScope);
         if ($found) {
             //
-            // If we found a variable, and the foreach include a key, mark the value as used:
+            // If we found a variable, and the foreach includes a key and value, mark the value as used:
             //
             if (($openPtr = $this->findContainingBrackets($phpcsFile, $stackPtr)) === false) {
                 return $found;
