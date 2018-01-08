@@ -47,6 +47,46 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
 	}
 
 	/**
+	 * @param \PHP_CodeSniffer_File $phpcsFile
+	 * @param int $stackPtr
+	 * @return bool|int|string
+	 */
+	function findVariableScope(
+		PHP_CodeSniffer_File $phpcsFile,
+		$stackPtr
+	) {
+		$tokens = $phpcsFile->getTokens();
+		$token  = $tokens[$stackPtr];
+
+		$in_class = false;
+		if (!empty($token['conditions'])) {
+			foreach (array_reverse($token['conditions'], true) as $scopePtr => $scopeCode) {
+				if (($scopeCode === T_FUNCTION) || ($scopeCode === T_CLOSURE)) {
+					return $scopePtr;
+				}
+				if (($scopeCode === T_CLASS) || ($scopeCode === T_INTERFACE)) {
+					$in_class = true;
+				}
+				if ($scopeCode === T_TRAIT) {
+					$in_class = true;
+				}
+			}
+		}
+
+		if (($scopePtr = $this->findFunctionPrototype($phpcsFile, $stackPtr)) !== false) {
+			return $scopePtr;
+		}
+
+		if ($in_class) {
+			// Member var of a class, we don't care.
+			return false;
+		}
+
+		// File scope, hmm, lets use first token of file?
+		return 0;
+	}
+
+	/**
 	 * @param PHP_CodeSniffer_File $phpcsFile
 	 * @param int $stackPtr
 	 * @param string $varName
