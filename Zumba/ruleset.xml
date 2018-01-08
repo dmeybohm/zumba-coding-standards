@@ -83,6 +83,9 @@
 			<!-- Force display of warnings, even if -n is passed -->
 			<property name="forceDisplayOfWarnings" value="1" />
 
+			<!-- Disable check for static members which doesn't work with traits -->
+			<property name="disableCheckForStaticMembers" value="1" />
+
 			<!-- Unused exception parameters are a very common pattern -->
 			<property name="allowUnusedCaughtExceptions" value="1"/>
 

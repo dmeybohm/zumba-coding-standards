@@ -20,6 +20,13 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
 	public $forceDisplayOfWarnings = false;
 
 	/**
+	 * Whether to disable the check for static members.
+	 *
+	 * @var bool
+	 */
+	public $disableCheckForStaticMembers = false;
+
+	/**
 	 * Processes this test, when one of its tokens is encountered.
 	 *
 	 * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
@@ -68,5 +75,49 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
 		}
 		return $found;
 	}
+
+	/**
+	 * @param \PHP_CodeSniffer_File $phpcsFile
+	 * @param int $stackPtr
+	 * @param string $varName
+	 * @param int $currScope
+	 * @return bool
+	 */
+	protected function checkForStaticMember(
+		PHP_CodeSniffer_File $phpcsFile,
+		$stackPtr,
+		$varName,
+		$currScope
+	) {
+		if ($this->disableCheckForStaticMembers) {
+			$tokens = $phpcsFile->getTokens();
+			$token  = $tokens[$stackPtr];
+
+			// Are we a static member?
+			$doubleColonPtr = $stackPtr - 1;
+			if ($tokens[$doubleColonPtr]['code'] !== T_DOUBLE_COLON) {
+				return false;
+			}
+			$classNamePtr = $stackPtr - 2;
+			if (($tokens[$classNamePtr]['code'] !== T_STRING) &&
+				($tokens[$classNamePtr]['code'] !== T_SELF) &&
+				($tokens[$classNamePtr]['code'] !== T_STATIC)
+			) {
+				return false;
+			}
+
+			// Are we refering to self:: outside a class?
+			// TODO: not sure this is our business or should be some other sniff.
+			if (($tokens[$classNamePtr]['code'] === T_SELF) ||
+				($tokens[$classNamePtr]['code'] === T_STATIC)
+			) {
+				// Disable the check.
+				return true;
+			}
+			return false;
+		}
+		return parent::checkForStaticMember($phpcsFile, $stackPtr, $varName, $currScope);
+	}
+
 
 }
