@@ -20,6 +20,26 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
 	public $forceDisplayOfWarnings = false;
 
 	/**
+	 * Processes this test, when one of its tokens is encountered.
+	 *
+	 * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
+	 * @param int                  $stackPtr  The position of the current token
+	 *                                        in the stack passed in $tokens.
+	 *
+	 * @return void
+	 */
+	public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr) {
+		if (!$this->forceDisplayOfWarnings) {
+			parent::process($phpcsFile, $stackPtr);
+			return;
+		}
+		$saveWarningSeverity = $phpcsFile->phpcs->cli->warningSeverity;
+		$phpcsFile->phpcs->cli->warningSeverity = 1;
+		parent::process($phpcsFile, $stackPtr);
+		$phpcsFile->phpcs->cli->warningSeverity = $saveWarningSeverity;
+	}
+
+	/**
 	 * @param PHP_CodeSniffer_File $phpcsFile
 	 * @param int $stackPtr
 	 * @param string $varName
@@ -47,26 +67,6 @@ class Zumba_Sniffs_PHP_VariableAnalysisSniff extends Generic_Sniffs_CodeAnalysis
 			}
 		}
 		return $found;
-	}
-
-	/**
-	 * Processes this test, when one of its tokens is encountered.
-	 *
-	 * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-	 * @param int                  $stackPtr  The position of the current token
-	 *                                        in the stack passed in $tokens.
-	 *
-	 * @return void
-	 */
-	public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr) {
-		if (!$this->forceDisplayOfWarnings) {
-			parent::process($phpcsFile, $stackPtr);
-			return;
-		}
-		$saveWarningSeverity = $phpcsFile->phpcs->cli->warningSeverity;
-		$phpcsFile->phpcs->cli->warningSeverity = 1;
-		parent::process($phpcsFile, $stackPtr);
-		$phpcsFile->phpcs->cli->warningSeverity = $saveWarningSeverity;
 	}
 
 }
