@@ -19,7 +19,7 @@ function f() {
 function g() {
 	$a = ["hello" => "goodbye"];
 	foreach ($a as $key => $value) {
-	    echo $key;
+		echo $key;
 	}
 }
 
@@ -31,15 +31,27 @@ function g() {
 function h() {
 	$a = ["hello" => "goodbye"];
 	foreach ($a as $key => $value) {
-	    echo $value;
+		echo $value;
+	}
+}
+
+/**
+ * Tests that the value part is marked unused if value is used in a non-indexed foreach loop.
+ *
+ * @return void
+ */
+function i() {
+	$a = ["hello" => "goodbye"];
+	foreach ($a as $value) {
 	}
 }
 ?>
 --EXPECT--
 
 --------------------------------------------------------------------------------
-FOUND 0 ERROR(S) AND 2 WARNING(S) AFFECTING 2 LINE(S)
+FOUND 0 ERROR(S) AND 3 WARNING(S) AFFECTING 3 LINE(S)
 --------------------------------------------------------------------------------
  10 | WARNING | Unused variable $key.
  33 | WARNING | Unused variable $key.
+ 45 | WARNING | Unused variable $value.
 --------------------------------------------------------------------------------
