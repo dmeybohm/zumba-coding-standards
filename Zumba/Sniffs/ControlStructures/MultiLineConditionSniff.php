@@ -1,12 +1,10 @@
 <?php
-/**
- * Zumba_Sniffs_ControlStructures_MultiLineConditionSniff.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
+
+namespace Zumba\Sniffs\ControlStructures;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Util\Tokens;
 
 /**
  * Zumba_Sniffs_ControlStructures_MultiLineConditionSniff.
@@ -16,10 +14,8 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  */
-class Zumba_Sniffs_ControlStructures_MultiLineConditionSniff implements PHP_CodeSniffer_Sniff
+class MultiLineConditionSniff implements Sniff
 {
-
-
     /**
      * Returns an array of tokens this test wants to listen for.
      *
@@ -35,13 +31,13 @@ class Zumba_Sniffs_ControlStructures_MultiLineConditionSniff implements PHP_Code
     /**
      * Processes this test, when one of its tokens is encountered.
      *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-     * @param int                  $stackPtr  The position of the current token
-     *                                        in the stack passed in $tokens.
+     * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being scanned.
+     * @param int                         $stackPtr  The position of the current token
+     *                                               in the stack passed in $tokens.
      *
      * @return void
      */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -101,7 +97,7 @@ class Zumba_Sniffs_ControlStructures_MultiLineConditionSniff implements PHP_Code
 
                 if ($tokens[$i]['line'] !== $tokens[$closeBracket]['line']) {
                     $next = $phpcsFile->findNext(T_WHITESPACE, $i, null, true);
-                    if (in_array($tokens[$next]['code'], PHP_CodeSniffer_Tokens::$booleanOperators) === true) {
+                    if (in_array($tokens[$next]['code'], Tokens::$booleanOperators) === true) {
                         $error = 'Each line in a multi-line IF statement must not begin with a boolean operator';
                         $phpcsFile->addError($error, $i, 'StartWithBoolean');
                     }
@@ -163,5 +159,3 @@ class Zumba_Sniffs_ControlStructures_MultiLineConditionSniff implements PHP_Code
 
 
 }//end class
-
-?>

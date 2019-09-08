@@ -1,17 +1,13 @@
 <?php
-/**
- * Parses and verifies the doc comments for functions.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
 
-if (class_exists('Squiz_Sniffs_Commenting_FunctionCommentSniff', true) === false) {
-    $error = 'Class Squiz_Sniffs_Commenting_FunctionCommentSniff not found';
-    throw new PHP_CodeSniffer_Exception($error);
-}
+namespace Zumba\Sniffs\Commenting;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Util\Common;
+use PHP_CodeSniffer\Util\Tokens;
+use Zumba\CodingStandards\CommentParser\FunctionCommentParser;
+use Zumba\CodingStandards\CommentParser\ParserException;
 
 /**
  * Parses and verifies the doc comments for functions.
@@ -31,9 +27,8 @@ if (class_exists('Squiz_Sniffs_Commenting_FunctionCommentSniff', true) === false
  * @category  PHP
  * @package   PHP_CodeSniffer
  */
-class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenting_FunctionCommentSniff
+class FunctionCommentSniff implements Sniff
 {
-
     /**
      * Same of parent $_tagIndex
      *
@@ -41,28 +36,52 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
      */
     protected $_tagIdx;
 
-    /**
-     * Processes this test, when one of its tokens is encountered.
-     *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-     * @param int                  $stackPtr  The position of the current token
-     *                                        in the stack passed in $tokens.
-     *
-     * @return void
-     */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
-    {
-        $this->currentFile = $phpcsFile;
+	/**
+	 * @var \Zumba\CodingStandards\CommentParser\FunctionCommentParser
+	 */
+	protected $commentParser;
 
+	protected $_functionToken;
+
+	/**
+	 * @var string|null
+	 */
+	protected $_methodName;
+
+	protected $_classToken;
+
+	/**
+	 * Return the tokens this processes.
+	 *
+	 * @return array|mixed[]
+	 */
+	public function register() {
+		return [
+			T_FUNCTION
+		];
+	}
+
+	/**
+	 * Processes this test, when one of its tokens is encountered.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being scanned.
+	 * @param int                         $stackPtr  The position of the current token
+	 *                                               in the stack passed in $tokens.
+	 *
+	 * @return void
+	 * @throws \PHP_CodeSniffer\Exceptions\TokenizerException
+	 */
+    public function process(File $phpcsFile, $stackPtr)
+    {
         $tokens = $phpcsFile->getTokens();
 
-        $find = array(
-                 T_COMMENT,
-                 T_DOC_COMMENT,
-                 T_CLASS,
-                 T_FUNCTION,
-                 T_OPEN_TAG,
-                );
+        $find = [
+             T_COMMENT,
+             T_DOC_COMMENT_CLOSE_TAG,
+             T_CLASS,
+             T_FUNCTION,
+             T_OPEN_TAG,
+        ];
 
         $commentEnd = $phpcsFile->findPrevious($find, ($stackPtr - 1));
 
@@ -81,8 +100,8 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
             // The function might actually be missing a comment, and this last comment
             // found is just commenting a bit of code on a line. So if it is not the
             // only thing on the line, assume we found nothing.
-            $prevContent = $phpcsFile->findPrevious(PHP_CodeSniffer_Tokens::$emptyTokens, $commentEnd);
-            if ($tokens[$commentEnd]['line'] === $tokens[$commentEnd]['line']) {
+            $prevContent = $phpcsFile->findPrevious(Tokens::$emptyTokens, $commentEnd);
+            if ($tokens[$commentEnd]['line'] === $tokens[$prevContent]['line']) {
                 $error = 'Missing function doc comment';
                 $phpcsFile->addError($error, $stackPtr, 'Missing');
             } else {
@@ -90,7 +109,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                 $phpcsFile->addError($error, $stackPtr, 'WrongStyle');
             }
             return;
-        } else if ($code !== T_DOC_COMMENT && $functionName !== '__toString') {
+        } else if ($code !== T_DOC_COMMENT_CLOSE_TAG && $functionName !== '__toString') {
             $error = 'Missing function doc comment';
             $phpcsFile->addError($error, $stackPtr, 'Missing');
             return;
@@ -98,7 +117,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
 
         // If there is any code between the function keyword and the doc block
         // then the doc block is not for us.
-        $ignore    = PHP_CodeSniffer_Tokens::$scopeModifiers;
+        $ignore    = Tokens::$scopeModifiers;
         $ignore[]  = T_STATIC;
         $ignore[]  = T_WHITESPACE;
         $ignore[]  = T_ABSTRACT;
@@ -120,14 +139,14 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
         }
 
         // Find the first doc comment.
-        $commentStart      = ($phpcsFile->findPrevious(T_DOC_COMMENT, ($commentEnd - 1), null, true) + 1);
+        $commentStart      = ($phpcsFile->findPrevious(Tokens::$commentTokens, ($commentEnd - 1), null, true) + 1);
         $commentString     = $phpcsFile->getTokensAsString($commentStart, ($commentEnd - $commentStart + 1));
         $this->_methodName = $phpcsFile->getDeclarationName($stackPtr);
 
         try {
-            $this->commentParser = new PHP_CodeSniffer_CommentParser_FunctionCommentParser($commentString, $phpcsFile);
+            $this->commentParser = new FunctionCommentParser($commentString, $phpcsFile);
             $this->commentParser->parse();
-        } catch (PHP_CodeSniffer_CommentParser_ParserException $e) {
+        } catch (ParserException $e) {
             $line = ($e->getLineWithinComment() + $commentStart);
             $phpcsFile->addError($e->getMessage(), $line, 'FailedParse');
             return;
@@ -148,9 +167,9 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
             $phpcsFile->addError($error, $commentStart, 'ContentAfterOpen');
         }
 
-        $this->processParams($commentStart, $commentEnd);
-        $this->processSees($commentStart);
-        $this->processReturn($commentStart, $commentEnd);
+        $this->processParams($phpcsFile, $commentStart, $commentEnd);
+        $this->processSees($phpcsFile, $commentStart);
+        $this->processReturn($phpcsFile, $commentStart, $commentEnd);
 
         // Check for a comment description.
         $short = $comment->getShortComment();
@@ -226,24 +245,25 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
         $lastPos = (count($words) - 1);
         if ($functionName !== '__toString' && (
             trim($words[($lastPos - 1)]) !== ''
-            || strpos($words[($lastPos - 1)], $this->currentFile->eolChar) === false
+            || strpos($words[($lastPos - 1)], $phpcsFile->eolChar) === false
             || trim($words[($lastPos - 2)]) === ''
         )) {
             $error = 'Additional blank lines found at end of function comment';
-            $this->currentFile->addError($error, $commentEnd, 'SpacingAfter');
+            $phpcsFile->addError($error, $commentEnd, 'SpacingAfter');
         }
 
     }//end process()
 
 
-    /**
-     * Process the see tags.
-     *
-     * @param int $commentStart The position in the stack where the comment started.
-     *
-     * @return void
-     */
-    protected function processSees($commentStart)
+	/**
+	 * Process the see tags.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile
+	 * @param int                         $commentStart The position in the stack where the comment started.
+	 *
+	 * @return void
+	 */
+    protected function processSees(File $phpcsFile, $commentStart)
     {
         $sees = $this->commentParser->getSees();
         if (empty($sees) === false) {
@@ -256,14 +276,14 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                     $this->_tagIdx++;
                     if ($index[$i] !== $this->_tagIdx) {
                         $error = 'The @see tag is in the wrong order; the tag precedes @return';
-                        $this->currentFile->addError($error, $errorPos, 'SeeOrder');
+                        $phpcsFile->addError($error, $errorPos, 'SeeOrder');
                     }
                 }
 
                 $content = $see->getContent();
                 if (empty($content) === true) {
                     $error = 'Content missing for @see tag in function comment';
-                    $this->currentFile->addError($error, $errorPos, 'EmptySee');
+                    $phpcsFile->addError($error, $errorPos, 'EmptySee');
                     continue;
                 }
             }//end foreach
@@ -272,20 +292,21 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
     }//end processSees()
 
 
-    /**
-     * Process the return comment of this function comment.
-     *
-     * @param int $commentStart The position in the stack where the comment started.
-     * @param int $commentEnd   The position in the stack where the comment ended.
-     *
-     * @return void
-     */
-    protected function processReturn($commentStart, $commentEnd)
+	/**
+	 * Process the return comment of this function comment.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile
+	 * @param int                         $commentStart The position in the stack where the comment started.
+	 * @param int                         $commentEnd   The position in the stack where the comment ended.
+	 *
+	 * @return void
+	 */
+    protected function processReturn(File $phpcsFile, $commentStart, $commentEnd)
     {
         // Skip constructor and destructor.
         $className = '';
         if ($this->_classToken !== null) {
-            $className = $this->currentFile->getDeclarationName($this->_classToken);
+            $className = $phpcsFile->getDeclarationName($this->_classToken);
             $className = strtolower(ltrim($className, '_'));
         }
 
@@ -294,7 +315,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
         $return          = $this->commentParser->getReturn();
 
         if ($isSpecialMethod === false && $methodName !== $className) {
-            $tokens = $this->currentFile->getTokens();
+            $tokens = $phpcsFile->getTokens();
             if ($return !== null) {
                 $tagOrder = $this->commentParser->getTagOrders();
                 $index    = array_keys($tagOrder, 'return');
@@ -303,19 +324,19 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
 
                 if (count($index) > 1) {
                     $error = 'Only 1 @return tag is allowed in function comment';
-                    $this->currentFile->addError($error, $errorPos, 'DuplicateReturn');
+                    $phpcsFile->addError($error, $errorPos, 'DuplicateReturn');
                     return;
                 }
 
                 if (empty($content) === true) {
                     $error = 'Return type missing for @return tag in function comment';
-                    $this->currentFile->addError($error, $errorPos, 'MissingReturnType');
+                    $phpcsFile->addError($error, $errorPos, 'MissingReturnType');
                 } else {
                     // Check return type (can be multiple, separated by '|').
                     $typeNames      = explode('|', $content);
                     $suggestedNames = array();
                     foreach ($typeNames as $i => $typeName) {
-                        $suggestedName = PHP_CodeSniffer::suggestType($typeName);
+                        $suggestedName = Common::suggestType($typeName);
                         if (in_array($suggestedName, $suggestedNames) === false) {
                             $suggestedNames[] = $suggestedName;
                         }
@@ -325,7 +346,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                     if ($content !== $suggestedType) {
                         $error = 'Function return type "%s" is invalid';
                         $data  = array($content);
-                        $this->currentFile->addError($error, $errorPos, 'InvalidReturn', $data);
+                        $phpcsFile->addError($error, $errorPos, 'InvalidReturn', $data);
                     }
 
                     // If the return type is void, make sure there is
@@ -333,7 +354,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                     if ($content === 'void') {
                         if (isset($tokens[$this->_functionToken]['scope_closer']) === true) {
                             $endToken = $tokens[$this->_functionToken]['scope_closer'];
-                            $this->ensureNoReturnStatementsReturnAValue($tokens, $endToken);
+                            $this->ensureNoReturnStatementsReturnAValue($phpcsFile, $tokens, $endToken);
                         }
                     } else if ($content !== 'mixed' && in_array("\\Generator", $suggestedNames, true) === false) {
                         // If return type is not void, and the function is not a generator,
@@ -341,15 +362,15 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                         // returns something.
                         if (isset($tokens[$this->_functionToken]['scope_closer']) === true) {
                             $endToken    = $tokens[$this->_functionToken]['scope_closer'];
-                            $returnToken = $this->currentFile->findNext(T_RETURN, $this->_functionToken, $endToken);
+                            $returnToken = $phpcsFile->findNext(T_RETURN, $this->_functionToken, $endToken);
                             if ($returnToken === false) {
                                 $error = 'Function return type is not void, but function has no return statement';
-                                $this->currentFile->addError($error, $errorPos, 'InvalidNoReturn');
+                                $phpcsFile->addError($error, $errorPos, 'InvalidNoReturn');
                             } else {
-                                $semicolon = $this->currentFile->findNext(T_WHITESPACE, ($returnToken + 1), null, true);
+                                $semicolon = $phpcsFile->findNext(T_WHITESPACE, ($returnToken + 1), null, true);
                                 if ($tokens[$semicolon]['code'] === T_SEMICOLON) {
                                     $error = 'Function return type is not void, but function is returning void here';
-                                    $this->currentFile->addError($error, $returnToken, 'InvalidReturnNotVoid');
+                                    $phpcsFile->addError($error, $returnToken, 'InvalidReturnNotVoid');
                                 }
                             }
                         }
@@ -359,7 +380,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                     if ($spacing !== 1) {
                         $error = '@return tag indented incorrectly; expected 1 space but found %s';
                         $data  = array($spacing);
-                        $this->currentFile->addError($error, $errorPos, 'ReturnIndent', $data);
+                        $phpcsFile->addError($error, $errorPos, 'ReturnIndent', $data);
                     }
                 }//end if
             } else {
@@ -378,7 +399,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                     }
                 }
                 $error = 'Missing @return tag in function comment';
-                $this->currentFile->addError($error, $commentEnd, 'MissingReturn');
+                $phpcsFile->addError($error, $commentEnd, 'MissingReturn');
             }//end if
 
         } else {
@@ -386,26 +407,28 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
             if ($return !== null) {
                 $errorPos = ($commentStart + $return->getLine());
                 $error    = '@return tag is not required for constructor and destructor';
-                $this->currentFile->addError($error, $errorPos, 'ReturnNotRequired');
+                $phpcsFile->addError($error, $errorPos, 'ReturnNotRequired');
             }
         }//end if
 
     }//end processReturn()
 
 
-    /**
-     * Process the function parameter comments.
-     *
-     * @param int $commentStart The position in the stack where
-     *                          the comment started.
-     * @param int $commentEnd   The position in the stack where
-     *                          the comment ended.
-     *
-     * @return void
-     */
-    protected function processParams($commentStart, $commentEnd)
+	/**
+	 * Process the function parameter comments.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile
+	 * @param int                         $commentStart The position in the stack where
+	 *                                                  the comment started.
+	 * @param int                         $commentEnd   The position in the stack where
+	 *                                                  the comment ended.
+	 *
+	 * @return void
+	 * @throws \PHP_CodeSniffer\Exceptions\TokenizerException
+	 */
+    protected function processParams(File $phpcsFile, $commentStart, $commentEnd)
     {
-        $realParams  = $this->currentFile->getMethodParameters($this->_functionToken);
+        $realParams  = $phpcsFile->getMethodParameters($this->_functionToken);
         $params      = $this->commentParser->getParams();
         $untypedParams = array();
 
@@ -415,7 +438,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
             if ($params[0]->getOrder() !== 2) {
                 $error    = 'Parameters must appear immediately after the comment';
                 $errorPos = ($params[0]->getLine() + $commentStart);
-                $this->currentFile->addError($error, $errorPos, 'SpacingBeforeParams');
+                $phpcsFile->addError($error, $errorPos, 'SpacingBeforeParams');
             }
 
             $previousParam      = null;
@@ -432,7 +455,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                 // Make sure that there is only one space before the var type.
                 if ($param->getWhitespaceBeforeType() !== ' ') {
                     $error = 'Expected 1 space before variable type';
-                    $this->currentFile->addError($error, $errorPos, 'SpacingBeforeParamType');
+                    $phpcsFile->addError($error, $errorPos, 'SpacingBeforeParamType');
                 }
 
                 $spaceCount = substr_count($param->getWhitespaceBeforeVarName(), ' ');
@@ -455,7 +478,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                 // Variable must be one of the supported standard type.
                 $typeNames = explode('|', $param->getType());
                 foreach ($typeNames as $typeName) {
-                    $suggestedName = PHP_CodeSniffer::suggestType($typeName);
+                    $suggestedName = Common::suggestType($typeName);
                     if ($typeName !== $suggestedName) {
                         $error = 'Expected "%s"; found "%s" for %s at position %s';
                         $data  = array(
@@ -464,7 +487,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
                                   $paramName,
                                   $pos,
                                  );
-                        $this->currentFile->addError($error, $errorPos, 'IncorrectParamVarName', $data);
+                        $phpcsFile->addError($error, $errorPos, 'IncorrectParamVarName', $data);
                     }//end if
                 }//end foreach
 
@@ -497,30 +520,30 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
 
                         $error .= 'actual variable name %s at position %s';
 
-                        $this->currentFile->addError($error, $errorPos, $code, $data);
+                        $phpcsFile->addError($error, $errorPos, $code, $data);
                     }
                 } else {
                     // We must have an extra parameter comment.
                     $error = 'Superfluous doc comment at position '.$pos;
-                    $this->currentFile->addError($error, $errorPos, 'ExtraParamComment');
+                    $phpcsFile->addError($error, $errorPos, 'ExtraParamComment');
                 }
 
                 if ($param->getVarName() === '') {
                     $error = 'Missing parameter name at position '.$pos;
-                     $this->currentFile->addError($error, $errorPos, 'MissingParamName');
+                     $phpcsFile->addError($error, $errorPos, 'MissingParamName');
                 }
 
                 if ($param->getType() === '') {
                     $error = 'Missing type at position '.$pos;
-                    $this->currentFile->addError($error, $errorPos, 'MissingParamType');
+                    $phpcsFile->addError($error, $errorPos, 'MissingParamType');
                 }
 
                 if ($paramComment !== '') {
                     // Param comments must start with a capital letter
-                    $firstChar = $paramComment{0};
+                    $firstChar = $paramComment[0];
                     if (preg_match('|[A-Z]|', $firstChar) === 0) {
                         $error = 'Param comment must start with a capital letter';
-                        $this->currentFile->addError($error, $errorPos, 'ParamCommentNotCapital');
+                        $phpcsFile->addError($error, $errorPos, 'ParamCommentNotCapital');
                     }
                 }
 
@@ -530,12 +553,12 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
 
             if ($spaceBeforeVar !== 1 && $spaceBeforeVar !== 10000 && $spaceBeforeComment !== 10000) {
                 $error = 'Expected 1 space after the longest type';
-                $this->currentFile->addError($error, $longestType, 'SpacingAfterLongType');
+                $phpcsFile->addError($error, $longestType, 'SpacingAfterLongType');
             }
 
             if ($spaceBeforeComment !== 1 && $spaceBeforeComment !== 10000) {
                 $error = 'Expected 1 space after the longest variable name';
-                $this->currentFile->addError($error, $longestVar, 'SpacingAfterLongName');
+                $phpcsFile->addError($error, $longestVar, 'SpacingAfterLongName');
             }
 
         }//end if
@@ -558,50 +581,54 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
 
             $error = 'Doc comment for "%s" missing';
             $data  = array($neededParam);
-            $this->currentFile->addError($error, $errorPos, 'MissingParamTag', $data);
+            $phpcsFile->addError($error, $errorPos, 'MissingParamTag', $data);
         }
 
     }//end processParams()
 
-    /**
-     * Ensure no return statements within a function return a value.
-     *
-     * Also detect return statements within closures, and ignore those.
-     *
-     * @param array $tokens
-     * @param int $endToken
-     * @return void
-     */
-    protected function ensureNoReturnStatementsReturnAValue($tokens, $endToken)
+	/**
+	 * Ensure no return statements within a function return a value.
+	 *
+	 * Also detect return statements within closures, and ignore those.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile
+	 * @param array                       $tokens
+	 * @param int                         $endToken
+	 *
+	 * @return void
+	 */
+    protected function ensureNoReturnStatementsReturnAValue(File $phpcsFile, $tokens, $endToken)
     {
         $startToken = $this->_functionToken;
         while (true) {
-            $returnToken = $this->currentFile->findNext(T_RETURN, $startToken, $endToken);
+            $returnToken = $phpcsFile->findNext(T_RETURN, $startToken, $endToken);
             if ($returnToken === false || $returnToken === $endToken) {
                 break;
             }
             // If the function is not returning anything, just
             // exiting, then there is no problem.
-            $semicolon = $this->currentFile->findNext(T_WHITESPACE, ($returnToken + 1), null, true);
+            $semicolon = $phpcsFile->findNext(T_WHITESPACE, ($returnToken + 1), null, true);
             if ($tokens[$semicolon]['code'] !== T_SEMICOLON) {
-                if (!$this->returnIsWithinClosure($tokens, $this->_functionToken, $returnToken)) {
+                if (!$this->returnIsWithinClosure($phpcsFile, $tokens, $this->_functionToken, $returnToken)) {
                     $error = 'Function return type is void, but function contains return statement';
-                    $this->currentFile->addError($error, $returnToken, 'InvalidReturnVoid');
+                    $phpcsFile->addError($error, $returnToken, 'InvalidReturnVoid');
                 }
             }
             $startToken = $semicolon;
         }
     }//end ensureNoReturnStatementsReturnAValue()
 
-    /**
-     * Search through the function to determine if the return is within a closure.
-     *
-     * @param array $tokens
-     * @param int $startFunctionToken
-     * @param int $returnToken
-     * @return boolean
-     */
-    protected function returnIsWithinClosure($tokens, $startFunctionToken, $returnToken)
+	/**
+	 * Search through the function to determine if the return is within a closure.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile
+	 * @param array                       $tokens
+	 * @param int                         $startFunctionToken
+	 * @param int                         $returnToken
+	 *
+	 * @return boolean
+	 */
+    protected function returnIsWithinClosure(File $phpcsFile, $tokens, $startFunctionToken, $returnToken)
     {
         //
         // We scan backwards in the function looking for curly braces, and keep a count of how many we've seen.
@@ -613,7 +640,7 @@ class Zumba_Sniffs_Commenting_FunctionCommentSniff extends Squiz_Sniffs_Commenti
         $types = array(T_OPEN_CURLY_BRACKET, T_CLOSE_CURLY_BRACKET, T_CLOSURE);
         $endToken = $returnToken;
         while (true) {
-            $tokenPos = $this->currentFile->findPrevious($types, $endToken, $startFunctionToken);
+            $tokenPos = $phpcsFile->findPrevious($types, $endToken, $startFunctionToken);
             if ($tokenPos === false) {
                 break;
             }

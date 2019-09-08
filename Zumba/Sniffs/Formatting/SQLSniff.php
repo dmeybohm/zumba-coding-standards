@@ -1,12 +1,9 @@
 <?php
-/**
- * Zumba_Sniffs_Formatting_SQLSniff.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
+
+namespace Zumba\Sniffs\Formatting;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\Sniff;
 
 /**
  * Zumba_Sniffs_Formatting_SQLSniff.
@@ -14,7 +11,7 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  */
-class Zumba_Sniffs_Formatting_SQLSniff implements PHP_CodeSniffer_Sniff
+class SQLSniff implements Sniff
 {
 
     /**
@@ -33,16 +30,16 @@ class Zumba_Sniffs_Formatting_SQLSniff implements PHP_CodeSniffer_Sniff
     }//end register()
 
 
-    /**
-     * Processes this test, when one of its tokens is encountered.
-     *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-     * @param int                  $stackPtr  The position of the current token in the
-     *                                        stack passed in $tokens.
-     *
-     * @return void
-     */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+	/**
+	 * Processes this test, when one of its tokens is encountered.
+	 *
+	 * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being scanned.
+	 * @param int                         $stackPtr  The position of the current token in the
+	 *                                               stack passed in $tokens.
+	 *
+	 * @return void
+	 */
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens    = $phpcsFile->getTokens();
 

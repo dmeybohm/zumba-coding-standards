@@ -1,16 +1,10 @@
 <?php
-/**
- * Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
 
-if (class_exists('PEAR_Sniffs_NamingConventions_ValidFunctionNameSniff', true) === false) {
-    throw new PHP_CodeSniffer_Exception('Class PEAR_Sniffs_NamingConventions_ValidFunctionNameSniff not found');
-}
+namespace Zumba\Sniffs\NamingConventions;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Standards\Squiz\Sniffs\NamingConventions\ValidFunctionNameSniff as BaseValidFunctionNameSniff;
+use PHP_CodeSniffer\Util\Common;
 
 /**
  * Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff.
@@ -21,20 +15,21 @@ if (class_exists('PEAR_Sniffs_NamingConventions_ValidFunctionNameSniff', true) =
  * @category  PHP
  * @package   PHP_CodeSniffer
  */
-class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_NamingConventions_ValidFunctionNameSniff
+class ValidFunctionNameSniff extends BaseValidFunctionNameSniff
 {
 
     /**
      * Processes the tokens within the scope.
      *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being processed.
-     * @param int                  $stackPtr  The position where this token was
-     *                                        found.
-     * @param int                  $currScope The position of the current scope.
+     * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being processed.
+     * @param int                         $stackPtr  The position where this token was
+     *                                               found.
+     * @param int                         $currScope The position of the current scope.
      *
      * @return void
+     * @throws \PHP_CodeSniffer\Exceptions\TokenizerException
      */
-    protected function processTokenWithinScope(PHP_CodeSniffer_File $phpcsFile, $stackPtr, $currScope)
+    protected function processTokenWithinScope(File $phpcsFile, $stackPtr, $currScope)
     {
         $methodName = $phpcsFile->getDeclarationName($stackPtr);
         if ($methodName === null) {
@@ -62,7 +57,7 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
         $scopeSpecified = $methodProps['scope_specified'];
 
         // If it's not a private method, it must not have an underscore on the front.
-        if ($scopeSpecified === true && $methodName{0} === '_') {
+        if ($scopeSpecified === true && $methodName[0] === '_') {
             $error = '%s method name "%s" must not be prefixed with an underscore';
             $data  = array(
                       ucfirst($scope),
@@ -78,11 +73,12 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
         // prefix if there is one because we cant determine if it is private or
         // public.
         $testMethodName = $methodName;
-        if ($scopeSpecified === false && $methodName{0} === '_') {
+        if ($scopeSpecified === false && $methodName[0]=== '_') {
             $testMethodName = substr($methodName, 1);
         }
 
-        if (PHP_CodeSniffer::isCamelCaps($testMethodName, false, true, false) === false) {
+
+        if (Common::isCamelCaps($testMethodName, false, true, false) === false) {
             if ($scopeSpecified === true) {
                 $error = '%s method name "%s" is not in camel caps format';
                 $data  = array(
@@ -104,13 +100,13 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
     /**
      * Processes the tokens outside the scope.
      *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being processed.
-     * @param int                  $stackPtr  The position where this token was
-     *                                        found.
+     * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being processed.
+     * @param int                         $stackPtr  The position where this token was
+     *                                               found.
      *
      * @return void
      */
-    protected function processTokenOutsideScope(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    protected function processTokenOutsideScope(File $phpcsFile, $stackPtr)
     {
         $functionName = $phpcsFile->getDeclarationName($stackPtr);
         if ($functionName === null) {
@@ -148,13 +144,13 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
 
         // If it has a package part, make sure the first letter is a capital.
         if ($packagePart !== '') {
-            if ($functionName{0} === '_') {
+            if ($functionName[0] === '_') {
                 $error = 'Function name "%s" is invalid; methods should not be prefixed with an underscore';
                 $phpcsFile->addError($error, $stackPtr, 'FunctionUnderscore', $errorData);
                 return;
             }
 
-            if ($functionName{0} !== strtoupper($functionName{0})) {
+            if ($functionName[0] !== strtoupper($functionName[0])) {
                 $error = 'Function name "%s" is prefixed with a package name but does not begin with a capital letter';
                 $phpcsFile->addError($error, $stackPtr, 'FunctionNoCaptial', $errorData);
                 return;
@@ -173,19 +169,19 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
         $newCamelCapsPart = $camelCapsPart;
 
         // Every function must have a camel caps part, so check that first.
-        if (PHP_CodeSniffer::isCamelCaps($camelCapsPart, false, true, false) === false) {
+        if (Common::isCamelCaps($camelCapsPart, false, true, false) === false) {
             $validName        = false;
-            $newCamelCapsPart = strtolower($camelCapsPart{0}).substr($camelCapsPart, 1);
+            $newCamelCapsPart = strtolower($camelCapsPart[0]).substr($camelCapsPart, 1);
         }
 
         if ($packagePart !== '') {
             // Check that each new word starts with a capital.
             $nameBits = explode('_', $packagePart);
             foreach ($nameBits as $bit) {
-                if ($bit{0} !== strtoupper($bit{0})) {
+                if ($bit[0] !== strtoupper($bit{0})) {
                     $newPackagePart = '';
                     foreach ($nameBits as $bit) {
-                        $newPackagePart .= strtoupper($bit{0}).substr($bit, 1).'_';
+                        $newPackagePart .= strtoupper($bit[0]).substr($bit, 1).'_';
                     }
 
                     $validName = false;
@@ -210,7 +206,4 @@ class Zumba_Sniffs_NamingConventions_ValidFunctionNameSniff extends PEAR_Sniffs_
 
     }//end processTokenOutsideScope()
 
-
-}//end class
-
-?>
+}

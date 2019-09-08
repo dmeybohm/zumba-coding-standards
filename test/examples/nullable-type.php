@@ -71,13 +71,20 @@ class NullableTypeTest {
 
 ?>
 --EXPECT--
---------------------------------------------------------------------------------
-FOUND 5 ERROR(S) AFFECTING 2 LINE(S)
---------------------------------------------------------------------------------
- 17 | ERROR | Expected 1 space before "?"; 0 found
- 17 | ERROR | Expected 1 space after "?"; 0 found
- 17 | ERROR | Expected 1 space before ":"; 0 found
- 17 | ERROR | Expected 1 space after ":"; 0 found
- 18 | ERROR | Expected 1 space after "?"; 0 found
---------------------------------------------------------------------------------
+----------------------------------------------------------------------
+FOUND 5 ERRORS AFFECTING 2 LINES
+----------------------------------------------------------------------
+ 17 | ERROR | [x] Expected 1 space before "?"; 0 found
+    |       |     (Zumba.WhiteSpace.OperatorSpacing.NoSpaceBefore)
+ 17 | ERROR | [x] Expected 1 space after "?"; 0 found
+    |       |     (Zumba.WhiteSpace.OperatorSpacing.NoSpaceAfter)
+ 17 | ERROR | [x] Expected 1 space before ":"; 0 found
+    |       |     (Zumba.WhiteSpace.OperatorSpacing.NoSpaceBefore)
+ 17 | ERROR | [x] Expected 1 space after ":"; 0 found
+    |       |     (Zumba.WhiteSpace.OperatorSpacing.NoSpaceAfter)
+ 18 | ERROR | [x] Expected 1 space after "?"; 0 found
+    |       |     (Zumba.WhiteSpace.OperatorSpacing.NoSpaceAfter)
+----------------------------------------------------------------------
+PHPCBF CAN FIX THE 5 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+----------------------------------------------------------------------
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace Zumba\CodingStandards\Test;
+
 /**
  * Short function description
  *
@@ -20,7 +22,7 @@ function generatorWithBoolean() {
 
 /**
  * Short function description
- * 
+ *
  * @return mixed
  */
 function generatorWithMixedReturn() {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zumba;
+namespace Zumba\CodingStandards\Test;
 
 use \Foobar;
 use \Foobaz;

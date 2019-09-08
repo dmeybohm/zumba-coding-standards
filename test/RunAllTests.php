@@ -3,7 +3,7 @@
 namespace Zumba\CodingStandards\Test;
 
 /**
- * This class loads all the tests in the data/*.php directory and tests
+ * This class loads all the tests in the examples/*.php directory and tests
  * whether the output of the sniffer matches the expectation defined in
  * the test file.
  */
@@ -16,14 +16,15 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider provideData
+	 * @test
 	 */
-	public function testAllTests($file)
+	public function runAllTestsInExamplesDir($file)
 	{
-		$contents = file_get_contents($this->dataDir() . $file);
+		$contents = file_get_contents($this->exampleDir() . $file);
 		list($testFileContents, $expected) = $this->splitExpectedAndTest($contents);
 
 		$phpcs = $this->vendorBin() . '/phpcs';
-		$cmd = $phpcs . ' --standard=Zumba ';
+		$cmd = $phpcs . ' -s --standard=Zumba -';
 		$output = $this->openProcessAndGetOutput($cmd, $testFileContents);
 		$output = $this->filterPhpCsOutput($output);
 
@@ -32,7 +33,7 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 
 	public function provideData()
 	{
-		$d = opendir($this->dataDir());
+		$d = opendir($this->exampleDir());
 		if ($d === false) {
 			throw new \RuntimeException("Failed to open dir");
 		}
@@ -41,8 +42,9 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 			if (is_dir($file)) {
 				continue;
 			}
-			$files[] = array($file);
+			$files[$file] = array($file);
 		}
+		ksort($files);
 		return $files;
 	}
 
@@ -54,14 +56,18 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 	/**
 	 * @return string
 	 */
-	protected function dataDir()
+	protected function exampleDir()
 	{
-		return __DIR__ . '/data/';
+		return __DIR__ . '/examples/';
 	}
 
 	protected function filterPhpCsOutput($output)
 	{
-		return trim(preg_replace('/FILE:.*/', "", $output));
+		return trim(
+			preg_replace('/(-----)\s+Time:.*/ms', '$1',
+				preg_replace('/FILE:.*/', "", $output)
+			)
+		);
 	}
 
 	/**
@@ -71,7 +77,7 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 	protected function splitExpectedAndTest($contents)
 	{
 		list($php, $expect) = explode('--EXPECT--', $contents);
-		$php = preg_replace("/\?>\$/", "", $php); // remove closing tag
+		$php = preg_replace("/\?>\s*\$/", "", $php); // remove closing tag
 		return array($php, $expect);
 	}
 

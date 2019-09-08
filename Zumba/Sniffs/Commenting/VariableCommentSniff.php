@@ -1,16 +1,14 @@
 <?php
-/**
- * Parses and verifies the variable doc comment.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
 
-if (class_exists('Squiz_Sniffs_Commenting_VariableCommentSniff', true) === false) {
-    throw new PHP_CodeSniffer_Exception('Class Squiz_Sniffs_Commenting_VariableCommentSniff not found');
-}
+namespace Zumba\Sniffs\Commenting;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Util\Common;
+use PHP_CodeSniffer\Util\Tokens;
+use Zumba\CodingStandards\BaseVariableCommentSniff;
+use Zumba\CodingStandards\CommentParser\MemberCommentParser;
+use Zumba\CodingStandards\CommentParser\ParserException;
+use Zumba\CodingStandards\ExtraTokens;
 
 /**
  * Parses and verifies the variable doc comment.
@@ -27,33 +25,39 @@ if (class_exists('Squiz_Sniffs_Commenting_VariableCommentSniff', true) === false
  * @package   PHP_CodeSniffer
  */
 
-class Zumba_Sniffs_Commenting_VariableCommentSniff extends Squiz_Sniffs_Commenting_VariableCommentSniff
+class VariableCommentSniff extends BaseVariableCommentSniff
 {
+	/**
+	 * @var \Zumba\CodingStandards\CommentParser\MemberCommentParser
+	 */
+	protected $commentParser;
 
-    /**
+	/**
+	 * @var \PHP_CodeSniffer\Files\File
+	 */
+	protected $currentFile;
+
+	/**
      * Called to process class member vars.
      *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-     * @param int                  $stackPtr  The position of the current token
-     *                                        in the stack passed in $tokens.
+     * @param \PHP_CodeSniffer\Files\File $phpcsFile The file being scanned.
+     * @param int                         $stackPtr  The position of the current token
+     *                                               in the stack passed in $tokens.
      *
      * @return void
      */
-    public function processMemberVar(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    public function processMemberVar(File $phpcsFile, $stackPtr)
     {
         $this->currentFile = $phpcsFile;
         $tokens            = $phpcsFile->getTokens();
-        $commentToken      = array(
-                              T_COMMENT,
-                              T_DOC_COMMENT,
-                             );
+        $commentTokens      = Tokens::$commentTokens;
 
         // Extract the var comment docblock.
-        $commentEnd = $phpcsFile->findPrevious($commentToken, ($stackPtr - 3));
+        $commentEnd = $phpcsFile->findPrevious($commentTokens, ($stackPtr - 3));
         if ($commentEnd !== false && $tokens[$commentEnd]['code'] === T_COMMENT) {
             $phpcsFile->addError('You must use "/**" style comments for a variable comment', $stackPtr, 'WrongStyle');
             return;
-        } else if ($commentEnd === false || $tokens[$commentEnd]['code'] !== T_DOC_COMMENT) {
+        } else if ($commentEnd === false || $tokens[$commentEnd]['code'] !== T_DOC_COMMENT_CLOSE_TAG) {
             $phpcsFile->addError('Missing variable doc comment', $stackPtr, 'Missing');
             return;
         } else {
@@ -65,14 +69,14 @@ class Zumba_Sniffs_Commenting_VariableCommentSniff extends Squiz_Sniffs_Commenti
             }
         }
 
-        $commentStart  = ($phpcsFile->findPrevious(T_DOC_COMMENT, ($commentEnd - 1), null, true) + 1);
+        $commentStart  = ($phpcsFile->findPrevious(ExtraTokens::$docCommentTokens, ($commentEnd - 1), null, true) + 1);
         $commentString = $phpcsFile->getTokensAsString($commentStart, ($commentEnd - $commentStart + 1));
 
         // Parse the header comment docblock.
         try {
-            $this->commentParser = new PHP_CodeSniffer_CommentParser_MemberCommentParser($commentString, $phpcsFile);
+            $this->commentParser = new MemberCommentParser($commentString, $phpcsFile);
             $this->commentParser->parse();
-        } catch (PHP_CodeSniffer_CommentParser_ParserException $e) {
+        } catch (ParserException $e) {
             $line = ($e->getLineWithinComment() + $commentStart);
             $phpcsFile->addError($e->getMessage(), $line, 'ErrorParsing');
             return;
@@ -220,7 +224,7 @@ class Zumba_Sniffs_Commenting_VariableCommentSniff extends Squiz_Sniffs_Commenti
                 return;
             } else {
                 $content = $content == 'bool' ? 'boolean' : ($content == 'int' ? 'integer' : $content);
-                $suggestedType = PHP_CodeSniffer::suggestType($content);
+                $suggestedType = Common::suggestType($content);
                 if ($content !== $suggestedType) {
                     $error = 'Expected "%s"; found "%s" for @var tag in variable comment';
                     $data  = array(

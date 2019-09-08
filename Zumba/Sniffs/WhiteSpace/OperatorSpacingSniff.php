@@ -1,17 +1,10 @@
 <?php
-/**
- * Zumba_Sniffs_ControlStructures_MultiLineConditionSniff.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- */
 
-if (class_exists('Squiz_Sniffs_WhiteSpace_OperatorSpacingSniff', true) === false) {
-    $error = 'Class Squiz_Sniffs_WhiteSpace_OperatorSpacingSniff not found';
-    throw new PHP_CodeSniffer_Exception($error);
-}
+namespace Zumba\Sniffs\WhiteSpace;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\OperatorSpacingSniff as BaseOperatorSpacingSniff;
 
 /**
  * Zumba_Sniffs_WhiteSpace_OperatorSpacingSniff
@@ -23,11 +16,11 @@ if (class_exists('Squiz_Sniffs_WhiteSpace_OperatorSpacingSniff', true) === false
  * @category  PHP
  * @package   PHP_CodeSniffer
  */
-class Zumba_Sniffs_WhiteSpace_OperatorSpacingSniff
-    extends Squiz_Sniffs_WhiteSpace_OperatorSpacingSniff
-    implements PHP_CodeSniffer_Sniff {
+class OperatorSpacingSniff
+    extends BaseOperatorSpacingSniff
+    implements Sniff {
 
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr) {
+    public function process(File $phpcsFile, $stackPtr) {
         $tokens = $phpcsFile->getTokens();
         if ($this->isProbablyNullableType($phpcsFile, $tokens, $stackPtr)) {
             return;
@@ -35,7 +28,7 @@ class Zumba_Sniffs_WhiteSpace_OperatorSpacingSniff
         parent::process($phpcsFile, $stackPtr);
     }
 
-    private function isProbablyNullableType(PHP_CodeSniffer_File $phpcsFile, $tokens, $stackPtr) {
+    private function isProbablyNullableType(File $phpcsFile, $tokens, $stackPtr) {
         $token = $tokens[$stackPtr];
         if ($token['code'] !== T_INLINE_THEN) {
             return false;
