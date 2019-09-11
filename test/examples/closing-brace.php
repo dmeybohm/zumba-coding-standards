@@ -37,7 +37,7 @@ class Foo {
 	 * Test multiple statements on the same line.
 	 */
 	public function testMultipleStatements(): void {
-	    $a = 1; $b = 2;
+	    $a = 1; $b = 2; // not allowed
 	}
 }
 ?>
