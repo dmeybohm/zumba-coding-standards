@@ -32,7 +32,7 @@
 	<rule ref="Zend.Files.ClosingTag"/>
 	<rule ref="Generic.Files.LineEndings"/>
 
-	<rule ref="Generic.Formatting.DisallowMultipleStatements"/>
+	<rule ref="Zumba.Formatting.DisallowMultipleStatements"/>
 	<rule ref="Generic.Formatting.NoSpaceAfterCast"/>
 	<rule ref="Zumba.Formatting.SQL"/>
 
