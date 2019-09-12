@@ -1,12 +1,10 @@
 <?php
 
 namespace Zumba\CodingStandards;
+
 use PHP_CodeSniffer\Exceptions\DeepExitException;
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
-use PHP_CodeSniffer_Exception;
-use PHP_CodeSniffer_File;
-use PHP_CodeSniffer_Sniff;
 
 /**
  * An AbstractScopeTest allows for tests that extend from this class to

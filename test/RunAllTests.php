@@ -45,6 +45,7 @@ class RunAllTests extends \PHPUnit\Framework\TestCase
 			$files[$file] = array($file);
 		}
 		ksort($files);
+		$files = ['multiline-sql-quote-on-prev-line.php' => ['multiline-sql-quote-on-prev-line.php']];
 		return $files;
 	}
 
