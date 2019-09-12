@@ -7,8 +7,14 @@ class TestProperties {
 	/** @var string */
 	public $shortProperty;
 
-	/** @var string Set the property here to something */
+	/** @var \Zumba\CodingStandards\Test\TestProperties[] Set the property here to something. */
 	protected $shortPropertyWithDescription;
+
+	/** @var array<string, \Zumba\CodingStandards\Test\TestProperties[]> Set the property here to something. */
+	protected $complexType;
+
+	/** @var ?array<string, \Zumba\CodingStandards\Test\TestProperties[]> Set the property here to something. */
+	protected $nullableType;
 
 	/**
 	 * @var string
@@ -28,8 +34,8 @@ class TestProperties {
 ?>
 --EXPECT--
 ----------------------------------------------------------------------
-FOUND 1 ERRORS AFFECTING 1 LINES
+FOUND 1 ERROR AFFECTING 1 LINE
 ----------------------------------------------------------------------
- 25 | ERROR | Missing variable doc comment
+ 31 | ERROR | Missing variable doc comment
     |       | (Zumba.Commenting.VariableComment.Missing)
 ----------------------------------------------------------------------

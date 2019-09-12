@@ -72,6 +72,11 @@ class VariableCommentSniff extends BaseVariableCommentSniff
         $commentStart  = ($phpcsFile->findPrevious(ExtraTokens::$docCommentTokens, ($commentEnd - 1), null, true) + 1);
         $commentString = $phpcsFile->getTokensAsString($commentStart, ($commentEnd - $commentStart + 1));
 
+        // if this is a short comment of the form "/** @var sometype */", then ignore it.
+	    if (preg_match('%^/\*\* @var .+$%', $commentString)) {
+	    	return;
+	    }
+
         // Parse the header comment docblock.
         try {
             $this->commentParser = new MemberCommentParser($commentString, $phpcsFile);
