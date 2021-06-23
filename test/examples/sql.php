@@ -84,18 +84,4 @@ class SqlTest {
 }
 ?>
 --EXPECT--
-----------------------------------------------------------------------
-FOUND 4 ERRORS AFFECTING 4 LINES
-----------------------------------------------------------------------
- 25 | ERROR | The last line in multi-line SQL must be in a single
-    |       | line (Zumba.Formatting.SQL.LastSQLLine) XXX diff error here
- 49 | ERROR | Multi-line SQL not indented correctly; expected 3
-    |       | spaces but found 2
-    |       | (Zumba.Formatting.SQL.AlignSQLLine)
- 54 | ERROR | Multi-line SQL not indented correctly; expected 2
-    |       | spaces but found 3
-    |       | (Zumba.Formatting.SQL.AlignSQLLine)
- 82 | ERROR | Multi-line SQL not indented correctly; expected 4
-    |       | spaces but found 3
-    |       | (Zumba.Formatting.SQL.AlignSQLLine)
-----------------------------------------------------------------------
+

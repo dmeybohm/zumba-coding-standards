@@ -33,9 +33,3 @@ class TestProperties {
 }
 ?>
 --EXPECT--
-----------------------------------------------------------------------
-FOUND 1 ERROR AFFECTING 1 LINE
-----------------------------------------------------------------------
- 31 | ERROR | Missing variable doc comment
-    |       | (Zumba.Commenting.VariableComment.Missing)
-----------------------------------------------------------------------

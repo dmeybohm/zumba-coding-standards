@@ -178,7 +178,7 @@ class ValidFunctionNameSniff extends BaseValidFunctionNameSniff
             // Check that each new word starts with a capital.
             $nameBits = explode('_', $packagePart);
             foreach ($nameBits as $bit) {
-                if ($bit[0] !== strtoupper($bit{0})) {
+                if ($bit[0] !== strtoupper($bit[0])) {
                     $newPackagePart = '';
                     foreach ($nameBits as $bit) {
                         $newPackagePart .= strtoupper($bit[0]).substr($bit, 1).'_';

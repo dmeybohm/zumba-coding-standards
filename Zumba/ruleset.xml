@@ -13,11 +13,9 @@
 	<rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
 	<rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
 	<rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier"/>
-	<rule ref="Generic.CodeAnalysis.UselessOverridingMethod"/>
+	<!-- <rule ref="Generic.CodeAnalysis.UselessOverridingMethod"/> -->
 
 	<rule ref="Squiz.Commenting.DocCommentAlignment"/>
-	<rule ref="Zumba.Commenting.VariableComment"/>
-	<rule ref="Zumba.Commenting.FunctionComment"/>
 	<rule ref="Squiz.Commenting.EmptyCatchComment"/>
 	<rule ref="PEAR.Commenting.InlineComment"/>
 	<!--<rule ref="Squiz.Commenting.FunctionCommentThrowTag"/> Need to implement namespace support -->
@@ -34,9 +32,7 @@
 
 	<rule ref="Zumba.Formatting.DisallowMultipleStatements"/>
 	<rule ref="Generic.Formatting.NoSpaceAfterCast"/>
-	<rule ref="Zumba.Formatting.SQL"/>
 
-	<rule ref="Squiz.Functions.FunctionDeclaration"/>
 	<rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
 	<rule ref="PEAR.Functions.ValidDefaultValue"/>
 
@@ -62,7 +58,7 @@
 	<rule ref="Squiz.Scope.MethodScope"/>
 	<rule ref="Squiz.Scope.StaticThisUsage"/>
 
-	<rule ref="Generic.Strings.UnnecessaryStringConcat"/>
+	<!-- <rule ref="Generic.Strings.UnnecessaryStringConcat"/> -->
 
 	<rule ref="Squiz.WhiteSpace.CastSpacing"/>
 	<rule ref="Squiz.WhiteSpace.LanguageConstructSpacing"/>

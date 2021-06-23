@@ -16,10 +16,3 @@ function foobar() {
 ?>
 --EXPECT--
 
-----------------------------------------------------------------------
-FOUND 1 ERROR AFFECTING 1 LINE
-----------------------------------------------------------------------
- 14 | ERROR | Function return type is void, but function contains
-    |       | return statement
-    |       | (Zumba.Commenting.FunctionComment.InvalidReturnVoid)
-----------------------------------------------------------------------
